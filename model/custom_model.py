@@ -18,10 +18,12 @@ if tokenizer is None:
 
 
 class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
-    eos_token_ids = {
-        tokenizer.get_vocab().get("。", 0): 2,
-        tokenizer.get_vocab().get("”", 0): 1,
-    }
+    # eos_token_ids = {
+    #     tokenizer.get_vocab().get("。", 0): 2,
+    #     tokenizer.get_vocab().get("”", 0): 1,
+    # }
+    eos_token_ids = tokenizer("。！？”；", add_special_tokens=False)['input_ids']
+    eos_token_ids_count = 2
     MIN_LENGTH = 5
 
     def _generate_no_beam_search(
@@ -49,7 +51,8 @@ class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
         Generate sequences for each example without beam search (num_beams == 1). All returned sequence are generated
         independantly.
         """
-        eos_token_ids = dict(self.eos_token_ids)
+        # eos_token_ids = dict(self.eos_token_ids)
+        eos_token_ids_count = int(self.eos_token_ids_count)
         # length of generated sentences / unfinished sentences
         unfinished_sents = tf.ones_like(input_ids[:, 0])
         sent_lengths = tf.ones_like(input_ids[:, 0]) * max_length
@@ -178,8 +181,8 @@ class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
 
             id_to_add = tokens_to_add.numpy()[0]
             if id_to_add in self.eos_token_ids:
-                eos_token_ids[id_to_add] -= 1
-                if any(count <= 0 for count in eos_token_ids.values()) and add_length >= self.MIN_LENGTH:
+                eos_token_ids_count -= 1
+                if eos_token_ids_count <= 0 and add_length >= self.MIN_LENGTH:
                     break
 
             # extend attention_mask for new generated input if only decoder

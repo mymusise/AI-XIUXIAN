@@ -20,7 +20,7 @@ class ACTION:
 
 class TextGenerator(object):
     MAX_LENGTH = 256
-    MAX_HISTORY_LENGTH = 1024 - MAX_LENGTH
+    MAX_HISTORY_LENGTH = 64
     PRE_NAME = "你"
     PRE_TEXT_ACTION = "> "
     END_ACTION = "。"
@@ -30,7 +30,13 @@ class TextGenerator(object):
 
     @property
     def pre_text(self):
-        return "\n".join(self.history)
+        return "\n".join(self.history)[-self.MAX_HISTORY_LENGTH:]
+
+    @property
+    def bad_words_ids(self):
+        bad_words = tokenizer.special_tokens_map.values()
+        ids = tokenizer(list(bad_words), add_special_tokens=False)['input_ids']
+        return ids
 
     def clean_warp(self, text):
         return text.replace(self.PRE_TEXT_ACTION, '')
@@ -42,17 +48,21 @@ class TextGenerator(object):
             text = f"{self.PRE_NAME}{ACTION.SAY}：“{text}。”"
         if not text.endswith(self.END_ACTION):
             text += self.END_ACTION
+        text = self.clean_warp(text)
         return text
 
-    def text_generator(self, text, repetition_penalty=1.5, top_k=5, eos_token_id=None, **kwargs):
+    def text_generator(self, text, repetition_penalty=1.2, top_k=3, eos_token_id=None, **kwargs):
         length_gen = len(text) + self.MAX_LENGTH
-        return text_generator(text, max_length=length_gen, do_sample=True, repetition_penalty=repetition_penalty, top_k=top_k, eos_token_id=eos_token_id, **kwargs)[0]['generated_text'].replace(' ', '')
+        return text_generator(text, max_length=length_gen, do_sample=True, repetition_penalty=repetition_penalty, top_k=top_k, eos_token_id=eos_token_id, bad_words_ids=self.bad_words_ids, **kwargs)[0]['generated_text']
+
+    def clean_result(self, text):
+        return text.replace(' ', '')
 
     def gen_next(self, text):
         text = self.wrap_text(text)
         all_text = self.pre_text + text
         result = self.text_generator(all_text)
         print(result)
-        next = result[len(all_text):]
+        next = self.clean_result(result[len(all_text):])
         text = self.PRE_TEXT_ACTION + text
         return text, next
