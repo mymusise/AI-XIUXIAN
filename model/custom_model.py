@@ -24,7 +24,7 @@ class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
     # }
     eos_token_ids = tokenizer("。！？”；", add_special_tokens=False)['input_ids']
     eos_token_ids_count = 2
-    MIN_LENGTH = 5
+    MIN_LENGTH = 10
 
     def _generate_no_beam_search(
         self,

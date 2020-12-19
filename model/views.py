@@ -4,23 +4,17 @@ from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .text_generator import TextGenerator
+from .game import GameController
 
 
 class TextGeneratorSerializer(serializers.Serializer):
     history = serializers.ListField()
     input_text = serializers.CharField(max_length=128, required=False, allow_blank=True)
+    steps = serializers.IntegerField()
+    text_type = serializers.ChoiceField(choices=['action', 'say'])
 
 
 class TextGeneratorView(viewsets.GenericViewSet):
-
-    @action(detail=True, methods=['get'])
-    def get_start_text(self, request):
-        # TODO: 需要改成根据用户选择类型生成
-        return Response({'next':
-                         "我是一名剑修，没有门派，没有师傅。小时候在一次巧合下在村子外面捡到一本剑法秘籍，" +
-                         "通过十年的琢磨，我终于把秘籍修炼完了。于是我离开了村子，想在外面历练一番。" +
-                         "离开村子后我来到一片树林，碰到一位在砍柴的樵夫。"
-                         })
 
     @action(detail=True, methods=['post'])
     def gen_next(self, request):
@@ -28,6 +22,18 @@ class TextGeneratorView(viewsets.GenericViewSet):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        generator = TextGenerator(serializer.data.get('history'))
-        current_text, next_text = generator.gen_next(serializer.data.get('input_text'))
+        input_text = serializer.data.get('input_text')
+        text_type = serializer.data.get('text_type')
+        
+        game = GameController()
+
+        current_text = game.wrap_text(input_text, text_type=text_type)
+        given_text = game.get_given_steps(serializer.data.get('steps'))
+
+        if given_text is not None:
+            next_text = given_text
+        else:
+            generator = TextGenerator(serializer.data.get('history'))
+            next_text = generator.gen_next(current_text)
+
         return Response({'next': next_text, 'text': current_text})
