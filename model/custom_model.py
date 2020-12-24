@@ -11,7 +11,7 @@ from transformers.generation_tf_utils import tf_top_k_top_p_filtering
 from transformers.generation_tf_utils import shape_list
 
 
-model_path = '/data2/novels/models/'
+model_path = '/data2/novels/finetune/models/'
 tokenizer = None
 if tokenizer is None:
     tokenizer = BertTokenizer.from_pretrained(model_path)

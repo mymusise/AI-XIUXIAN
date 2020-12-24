@@ -34,6 +34,6 @@ class TextGeneratorView(viewsets.GenericViewSet):
             next_text = given_text
         else:
             generator = TextGenerator(serializer.data.get('history'))
-            next_text = generator.gen_next(current_text)
+            next_text = generator.gen_next(game.clean_warp(current_text), text_type)
 
         return Response({'next': next_text, 'text': current_text})
