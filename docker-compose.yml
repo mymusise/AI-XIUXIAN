@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  web:
+    build: 
+      context: .
+    # env_file:
+    #   - .env
+    command: gunicorn -w 2 apis.wsgi -b 0.0.0.0:80
+    volumes:
+      - /data2/:/data2/
+    # environment:
+    #   - DEBUG=TRUE
+    ports:
+      - 7890:80
+    restart: always

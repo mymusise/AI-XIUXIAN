@@ -6,5 +6,5 @@ numpy
 pandas
 xlrd
 tensorflow-cpu
-transformers
-
+transformers==4.0
+gunicorn==19.9.0
