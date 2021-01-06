@@ -33,7 +33,8 @@ else:
 
 ALLOWED_HOSTS = ['127.0.0.1', '101.200.239.1', 'aixx.mymusise.com', 'api-aixx.mymusise.com']
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https*://\w+\.mymusise\.com$",
+    r"^https*://\S+\.mymusise\.com$",
+    r"^https*://\S+\.mymusise\.com:\d+$",
 ]
 
 if DEBUG:
