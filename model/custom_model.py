@@ -11,7 +11,7 @@ from transformers.generation_tf_utils import tf_top_k_top_p_filtering
 from transformers.generation_tf_utils import shape_list
 
 
-model_path = '/data2/novels/finetune/models/'
+model_path = '/data2/novels/finetune/models_backup_berttoken/'
 tokenizer = None
 if tokenizer is None:
     tokenizer = BertTokenizer.from_pretrained(model_path)
@@ -24,7 +24,7 @@ class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
     # }
     eos_token_ids = tokenizer("。！？”；", add_special_tokens=False)['input_ids']
     eos_token_ids_count = 2
-    MIN_LENGTH = 10
+    MIN_LENGTH = 20
 
     def _generate_no_beam_search(
         self,
