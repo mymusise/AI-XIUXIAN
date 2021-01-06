@@ -31,7 +31,10 @@ if os.environ.get("IS_DEBUG"):
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', '101.200.239.1', 'aixiuxian.mymusise.com']
+ALLOWED_HOSTS = ['127.0.0.1', '101.200.239.1', 'aixx.mymusise.com', 'api-aixx.mymusise.com']
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https*://\w+\.mymusise\.com$",
+]
 
 if DEBUG:
     CORS_ORIGIN_ALLOW_ALL = True
