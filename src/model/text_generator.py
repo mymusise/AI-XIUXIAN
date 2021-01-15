@@ -75,9 +75,9 @@ class TextGenerator(object):
 
 
 
-model = None
-
-if model is None:
+try:
+    model
+except NameError:
     print(f'loading model from pretrained {model_path}')
     model = TFGPT2LMHeadModel.from_pretrained(model_path)
     text_generator = TextGenerationPipeline(model, tokenizer)
