@@ -15,6 +15,7 @@ class TextGeneratorSerializer(serializers.Serializer):
 
 
 class TextGeneratorView(viewsets.GenericViewSet):
+    default_player_name = "王多多"
 
     @action(detail=True, methods=['post'])
     def gen_next(self, request):
@@ -25,7 +26,7 @@ class TextGeneratorView(viewsets.GenericViewSet):
         input_text = serializer.data.get('input_text')
         text_type = serializer.data.get('text_type')
         
-        game = GameController()
+        game = GameController(self.default_player_name)
 
         current_text = game.wrap_text(input_text, text_type=text_type)
         given_text = game.get_given_steps(serializer.data.get('steps'))
@@ -34,6 +35,6 @@ class TextGeneratorView(viewsets.GenericViewSet):
             next_text = given_text
         else:
             generator = TextGenerator(serializer.data.get('history'))
-            next_text = generator.gen_next(game.clean_warp(current_text), text_type)
+            next_text = generator.gen_next(game.clean_warp(current_text), text_type, game.player)
 
         return Response({'next': next_text, 'text': current_text})

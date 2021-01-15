@@ -1,6 +1,6 @@
-from transformers import TextGenerationPipeline
+from transformers import TextGenerationPipeline as OldTextGenerationPipeline
 from transformers import TFGPT2LMHeadModel
-from transformers import BertTokenizer
+from transformers import XLNetTokenizer
 import tensorflow as tf
 from transformers.generation_tf_utils import _create_next_token_logits_penalties
 from transformers.generation_tf_utils import calc_banned_ngram_tokens
@@ -9,12 +9,13 @@ from transformers.generation_tf_utils import calc_banned_bad_words_ids
 from transformers.generation_tf_utils import set_tensor_by_indices_to_value
 from transformers.generation_tf_utils import tf_top_k_top_p_filtering
 from transformers.generation_tf_utils import shape_list
+from .tokens import extra_token
 
 
-model_path = '/data2/novels/finetune/models_backup_berttoken/'
+model_path = '/data2/novels/finetune/models/'
 tokenizer = None
 if tokenizer is None:
-    tokenizer = BertTokenizer.from_pretrained(model_path)
+    tokenizer = XLNetTokenizer.from_pretrained(model_path, additional_special_tokens=extra_token)
 
 
 class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
@@ -215,3 +216,130 @@ class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
             decoded = input_ids
         print(self.eos_token_ids)
         return decoded
+
+
+
+class TextGenerationPipeline(OldTextGenerationPipeline):
+
+    def __call__(
+        self,
+        text_inputs,
+        return_tensors=False,
+        return_text=True,
+        skip_special_tokens=True,
+        clean_up_tokenization_spaces=False,
+        prefix=None,
+        **generate_kwargs
+    ):
+        """
+        Complete the prompt(s) given as inputs.
+
+        Args:
+            args (:obj:`str` or :obj:`List[str]`):
+                One or several prompts (or one list of prompts) to complete.
+            return_tensors (:obj:`bool`, `optional`, defaults to :obj:`False`):
+                Whether or not to include the tensors of predictions (as token indices) in the outputs.
+            return_text (:obj:`bool`, `optional`, defaults to :obj:`True`):
+                Whether or not to include the decoded texts in the outputs.
+            clean_up_tokenization_spaces (:obj:`bool`, `optional`, defaults to :obj:`False`):
+                Whether or not to clean up the potential extra spaces in the text output.
+            prefix (:obj:`str`, `optional`):
+                Prefix added to prompt.
+            generate_kwargs:
+                Additional keyword arguments to pass along to the generate method of the model (see the generate method
+                corresponding to your framework `here <./model.html#generative-models>`__).
+
+        Return:
+            A list or a list of list of :obj:`dict`: Each result comes as a dictionary with the following keys:
+
+            - **generated_text** (:obj:`str`, present when ``return_text=True``) -- The generated text.
+            - **generated_token_ids** (:obj:`torch.Tensor` or :obj:`tf.Tensor`, present when ``return_tensors=True``)
+              -- The token ids of the generated text.
+        """
+
+        if isinstance(text_inputs, str):
+            text_inputs = [text_inputs]
+        results = []
+        for prompt_text in text_inputs:
+            # Manage correct placement of the tensors
+            with self.device_placement():
+                prefix = prefix if prefix is not None else self.model.config.prefix
+                if prefix is None and self.model.__class__.__name__ in [
+                    "XLNetLMHeadModel",
+                    "TransfoXLLMHeadModel",
+                    "TFXLNetLMHeadModel",
+                    "TFTransfoXLLMHeadModel",
+                ]:
+                    # For XLNet and TransformerXL we add an article to the prompt to give more state to the model.
+                    prefix = self.XL_PREFIX
+
+                if prefix:
+                    prefix_inputs = self._parse_and_tokenize(
+                        prefix, padding=False, add_special_tokens=False)
+                    # This impacts max_length and min_length argument that need adjusting.
+                    prefix_length = prefix_inputs["input_ids"].shape[-1]
+                    if generate_kwargs.get("max_length", None) is not None:
+                        generate_kwargs["max_length"] += prefix_length
+                    if generate_kwargs.get("min_length", None) is not None:
+                        generate_kwargs["min_length"] += prefix_length
+
+                prefix = prefix or ""
+                inputs = self._parse_and_tokenize(
+                    prefix + prompt_text, padding=False, add_special_tokens=False)
+
+                # set input_ids to None to allow empty prompt
+                if inputs["input_ids"].shape[-1] == 0:
+                    inputs["input_ids"] = None
+                    inputs["attention_mask"] = None
+
+                if self.framework == "pt" and inputs["input_ids"] is not None:
+                    inputs = self.ensure_tensor_on_device(**inputs)
+
+                input_ids = inputs["input_ids"]
+
+                # Ensure that batch size = 1 (batch generation not allowed for now)
+                assert (
+                    input_ids is None or input_ids.shape[0] == 1
+                ), "Batch generation is currently not supported. See https://github.com/huggingface/transformers/issues/3021 for more information."
+
+                output_sequences = self.model.generate(
+                    input_ids=input_ids, **generate_kwargs)  # BS x SL
+
+            result = []
+            for generated_sequence in output_sequences:
+                if self.framework == "pt" and generated_sequence is not None:
+                    generated_sequence = generated_sequence.cpu()
+                generated_sequence = generated_sequence.numpy().tolist()
+                record = {}
+                if return_tensors:
+                    record["generated_token_ids"] = generated_sequence
+                if return_text:
+                    # Decode text
+                    text = self.tokenizer.decode(
+                        generated_sequence,
+                        skip_special_tokens=skip_special_tokens,
+                        clean_up_tokenization_spaces=clean_up_tokenization_spaces,
+                    )
+
+                    # Remove PADDING prompt of the sequence if XLNet or Transfo-XL model is used
+                    if input_ids is None:
+                        prompt_length = 0
+                    else:
+                        prompt_length = len(
+                            self.tokenizer.decode(
+                                input_ids[0],
+                                skip_special_tokens=skip_special_tokens,
+                                clean_up_tokenization_spaces=clean_up_tokenization_spaces,
+                            )
+                        )
+
+                    record["generated_text"] = prompt_text + \
+                        text[prompt_length:]
+
+                result.append(record)
+            results += [result]
+
+        if len(results) == 1:
+            return results[0]
+
+        return results
