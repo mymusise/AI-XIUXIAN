@@ -8,3 +8,4 @@ xlrd
 tensorflow-cpu
 transformers==4.0
 gunicorn==19.9.0
+sentencepiece==0.1.95
