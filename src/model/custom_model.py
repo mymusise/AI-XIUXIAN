@@ -15,17 +15,20 @@ from .tokens import extra_token
 model_path = '/data2/novels/finetune/models/'
 tokenizer = None
 if tokenizer is None:
-    tokenizer = XLNetTokenizer.from_pretrained(model_path, additional_special_tokens=extra_token)
+    tokenizer = XLNetTokenizer.from_pretrained(
+        model_path, additional_special_tokens=extra_token)
 
+
+eos_tokens = ["....", ".", "。", "!", "?", "！", "？", "”", "；", "\""]
 
 class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
     # eos_token_ids = {
     #     tokenizer.get_vocab().get("。", 0): 2,
     #     tokenizer.get_vocab().get("”", 0): 1,
     # }
-    eos_token_ids = tokenizer("。！？”；", add_special_tokens=False)['input_ids']
+    eos_token_ids = [v for k, v in tokenizer.get_vocab().items() for t in eos_tokens if t in k ]
     eos_token_ids_count = 2
-    MIN_LENGTH = 20
+    MIN_LENGTH = 10
 
     def _generate_no_beam_search(
         self,
@@ -52,6 +55,7 @@ class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
         Generate sequences for each example without beam search (num_beams == 1). All returned sequence are generated
         independantly.
         """
+        print("_generate_no_beam_search ing...")
         # eos_token_ids = dict(self.eos_token_ids)
         eos_token_ids_count = int(self.eos_token_ids_count)
         # length of generated sentences / unfinished sentences
@@ -216,7 +220,6 @@ class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
             decoded = input_ids
         print(self.eos_token_ids)
         return decoded
-
 
 
 class TextGenerationPipeline(OldTextGenerationPipeline):
