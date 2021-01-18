@@ -1,4 +1,5 @@
 from .custom_model import TFGPT2LMHeadModel, TextGenerationPipeline
+# from transformers import TextGenerationPipeline
 from .custom_model import tokenizer, model_path
 from .game import _TextType
 import re
@@ -27,7 +28,7 @@ class TextGenerator(object):
         ids = tokenizer(list(bad_words), add_special_tokens=False)['input_ids']
         return ids
 
-    def text_generator(self, text, repetition_penalty=1.2, top_k=0, temperature=0.8, eos_token_id=None, **kwargs):
+    def text_generator(self, text, repetition_penalty=1.2, top_k=5, temperature=0.8, eos_token_id=None, **kwargs):
         length_gen = len(text) + self.MAX_LENGTH
         return text_generator(
             text,
@@ -35,6 +36,7 @@ class TextGenerator(object):
             do_sample=True,
             repetition_penalty=repetition_penalty,
             top_k=top_k,
+            no_repeat_ngram_size=3,
             skip_special_tokens=False,
             eos_token_id=eos_token_id,
             temperature=temperature,
@@ -46,6 +48,7 @@ class TextGenerator(object):
         text = text.replace(' ', '')
         text = text.replace(str(ExpandToken.DO), '')
         text = text.replace(str(ExpandToken.SAY), '')
+        # TODO: 补全对话结束符: ”
         return text
 
     def add_expand_token(self, text, text_type):
@@ -64,7 +67,7 @@ class TextGenerator(object):
         return text.replace(HERO_TOKEN, player_name)
 
     def gen_next(self, text, text_type, player):
-        text = self.add_expand_token(text, text_type)
+        # text = self.add_expand_token(text, text_type)
         all_text = self.pre_text + text
         all_text = self.encode_player_name(all_text, player.name)
         result = self.text_generator(all_text)

@@ -27,8 +27,8 @@ class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
     #     tokenizer.get_vocab().get("”", 0): 1,
     # }
     eos_token_ids = [v for k, v in tokenizer.get_vocab().items() for t in eos_tokens if t in k ]
-    eos_token_ids_count = 2
-    MIN_LENGTH = 10
+    eos_token_ids_count = 3
+    MIN_LENGTH = 30
 
     def _generate_no_beam_search(
         self,
