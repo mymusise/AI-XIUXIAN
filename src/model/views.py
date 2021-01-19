@@ -5,6 +5,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .text_generator import TextGenerator
 from .game import GameController
+from apis.settings import logger
+from utils.base import BaseView
 
 
 class TextGeneratorSerializer(serializers.Serializer):
@@ -14,7 +16,7 @@ class TextGeneratorSerializer(serializers.Serializer):
     text_type = serializers.ChoiceField(choices=['action', 'say'])
 
 
-class TextGeneratorView(viewsets.GenericViewSet):
+class TextGeneratorView(BaseView, viewsets.GenericViewSet):
     default_player_name = "王多多"
 
     @action(detail=True, methods=['post'])
@@ -25,7 +27,7 @@ class TextGeneratorView(viewsets.GenericViewSet):
 
         input_text = serializer.data.get('input_text')
         text_type = serializer.data.get('text_type')
-        
+
         game = GameController(self.default_player_name)
 
         current_text = game.wrap_text(input_text, text_type=text_type)
@@ -36,5 +38,5 @@ class TextGeneratorView(viewsets.GenericViewSet):
         else:
             generator = TextGenerator(serializer.data.get('history'))
             next_text = generator.gen_next(game.clean_warp(current_text), text_type, game.player)
-
+        self.logger.info(f"[next_text={next_text}]")
         return Response({'next': next_text, 'text': current_text})
