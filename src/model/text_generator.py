@@ -48,7 +48,10 @@ class TextGenerator(object):
         text = text.replace(' ', '')
         text = text.replace(str(ExpandToken.DO), '')
         text = text.replace(str(ExpandToken.SAY), '')
-        # TODO: 补全对话结束符: ”
+        # 补全对话结束符: ”
+        talk_start_index = list(re.finditer('“', text))[-1].end()
+        if '”' not in text[talk_start_index:]:
+            text += '”'
         return text
 
     def add_expand_token(self, text, text_type):
