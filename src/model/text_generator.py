@@ -13,7 +13,7 @@ class ExpandToken:
 
 class TextGenerator(object):
     MAX_LENGTH = 128
-    MAX_HISTORY_LENGTH = 256
+    MAX_HISTORY_LENGTH = 128
 
     def __init__(self, history):
         self.history = history
