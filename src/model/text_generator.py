@@ -28,7 +28,7 @@ class TextGenerator(object):
         ids = tokenizer(list(bad_words), add_special_tokens=False)['input_ids']
         return ids
 
-    def text_generator(self, text, repetition_penalty=1.2, top_k=0, temperature=0.8, eos_token_id=None, **kwargs):
+    def text_generator(self, text, repetition_penalty=1, top_k=0, temperature=0.8, eos_token_id=None, **kwargs):
         length_gen = len(text) + self.MAX_LENGTH
         return text_generator(
             text,

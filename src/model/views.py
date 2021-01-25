@@ -27,16 +27,20 @@ class TextGeneratorView(BaseView, viewsets.GenericViewSet):
 
         input_text = serializer.data.get('input_text')
         text_type = serializer.data.get('text_type')
+        step = serializer.data.get('steps')
 
         game = GameController(self.default_player_name)
 
         current_text = game.wrap_text(input_text, text_type=text_type)
-        given_text = game.get_given_steps(serializer.data.get('steps'))
-
-        if given_text is not None:
-            next_text = given_text
-        else:
+        
+        next_text = ''
+        if step > 0:
             generator = TextGenerator(serializer.data.get('history'))
             next_text = generator.gen_next(game.clean_warp(current_text), text_type, game.player)
+
+        given_text = game.get_given_steps(step)
+        if given_text is not None:
+            next_text += given_text
+
         self.logger.info(f"[next_text={next_text}]")
         return Response({'next': next_text, 'text': current_text})
