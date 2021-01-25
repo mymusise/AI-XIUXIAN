@@ -13,7 +13,7 @@ class ExpandToken:
 
 class TextGenerator(object):
     MAX_LENGTH = 128
-    MAX_HISTORY_LENGTH = 128
+    MAX_HISTORY_LENGTH = 256
 
     def __init__(self, history):
         self.history = history
@@ -28,7 +28,7 @@ class TextGenerator(object):
         ids = tokenizer(list(bad_words), add_special_tokens=False)['input_ids']
         return ids
 
-    def text_generator(self, text, repetition_penalty=1, top_k=5, temperature=0.8, eos_token_id=None, **kwargs):
+    def text_generator(self, text, repetition_penalty=1.2, top_k=0, temperature=0.8, eos_token_id=None, **kwargs):
         length_gen = len(text) + self.MAX_LENGTH
         return text_generator(
             text,
@@ -36,7 +36,7 @@ class TextGenerator(object):
             do_sample=True,
             repetition_penalty=repetition_penalty,
             top_k=top_k,
-            no_repeat_ngram_size=3,
+            # no_repeat_ngram_size=2,
             skip_special_tokens=False,
             eos_token_id=eos_token_id,
             temperature=temperature,
@@ -87,5 +87,5 @@ try:
     model
 except NameError:
     print(f'loading model from pretrained {model_path}')
-    model = TFGPT2LMHeadModel.from_pretrained(model_path)
+    model = TFGPT2LMHeadModel.from_pretrained(model_path, use_cache=True)
     text_generator = TextGenerationPipeline(model, tokenizer)
