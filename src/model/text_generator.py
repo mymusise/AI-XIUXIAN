@@ -14,13 +14,19 @@ class ExpandToken:
 class TextGenerator(object):
     MAX_LENGTH = 128
     MAX_HISTORY_LENGTH = 256
+    SHORT_LENGTH = 16
 
-    def __init__(self, history):
+    def __init__(self, history, sence):
         self.history = history
+        self._scene = sence
 
     @property
     def pre_text(self):
         return "\n".join(self.history)[-self.MAX_HISTORY_LENGTH:]
+
+    @property
+    def short_text(self):
+        return self.pre_text[-self.SHORT_LENGTH:]
 
     @property
     def bad_words_ids(self):
@@ -28,7 +34,19 @@ class TextGenerator(object):
         ids = tokenizer(list(bad_words), add_special_tokens=False)['input_ids']
         return ids
 
-    def text_generator(self, text, repetition_penalty=1, top_k=0, temperature=0.8, eos_token_id=None, **kwargs):
+    @property
+    def scene(self):
+        print("self._scene", self._scene)
+        print("self.pre_text", self.pre_text)
+        if self._scene[:-10] in self.pre_text:
+            return ''
+        return self._scene
+
+    def text_generator(self, text, repetition_penalty=1, top_k=0, temperature=0.8, eos_token_id=None, sentences_nums=2, **kwargs):
+        model.set_sentence_num(sentences_nums)
+        if sentences_nums == 1:
+            model.get_min_length(5)
+        text_generator = TextGenerationPipeline(model, tokenizer)
         length_gen = len(text) + self.MAX_LENGTH
         return text_generator(
             text,
@@ -71,9 +89,16 @@ class TextGenerator(object):
     def decode_player_name(self, text, player_name):
         return text.replace(HERO_TOKEN, player_name)
 
-    def gen_next(self, text, text_type, player):
+    def gen_next(self, text, text_type, player, add_scene=True):
         # text = self.add_expand_token(text, text_type)
+        # text = self.encode_player_name(text, player.name)
+        # result = self.text_generator(text, sentences_nums=1)
+        # print(result)
+        # result = result[self.SHORT_LENGTH:]
         all_text = self.pre_text + text
+        if add_scene:
+            all_text = self.scene + all_text
+
         all_text = self.encode_player_name(all_text, player.name)
         result = self.text_generator(all_text)
         print(result)
@@ -88,4 +113,4 @@ try:
 except NameError:
     print(f'loading model from pretrained {model_path}')
     model = TFGPT2LMHeadModel.from_pretrained(model_path, use_cache=True)
-    text_generator = TextGenerationPipeline(model, tokenizer)
+

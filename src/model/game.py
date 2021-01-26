@@ -39,8 +39,9 @@ class GameController(object):
     PRE_TEXT_ACTION = "> "
     END_ACTION_ADD = "。"
 
-    def __init__(self, player_name):
+    def __init__(self, player_name, step):
         self.player = Player(player_name)  # 应该初始化更多的用户信息
+        self.step = step
         # self.scripts = {
         #     0: f"你叫{self.player.name}，是一名剑修，没有门派，没有师傅。小时候在一次巧合下在村子外面捡到一本剑法秘籍，通过十年的琢磨，{self.player.name}终于把秘籍修炼完了。于是{self.player.name}离开了村子，想在外面历练一番。离开村子后{self.player.name}来到一片树林，碰到一位在砍柴的樵夫。",
         #     1: f"{self.player.name}在树林的边上发现一间客栈，进去发现里面坐满了人，向小二打听了下发现大部分都是来参加比武大赛的。",
@@ -52,6 +53,14 @@ class GameController(object):
         self.scripts = {
             0: f"漆黑中醒来，{self.player.name}发现自己在一个完全陌生的树林中，四面一片漆黑。{self.player.name}此时内心充满了恐惧与不安，他不知道自己如何到这个地方。正在他伸手打算去摸一下自己的口袋，然而发现他的口袋中什么都没有，他决定去找到自己为什么会出现在这里。{self.player.name}站起身来望了望四周，发现有一条小路。"
         }
+
+    @property
+    def scene(self):
+        script = ''
+        for k, v in self.scripts.items():
+            if self.step > k:
+                script = v
+        return script
 
     def clean_warp(self, text):
         return text.replace(self.PRE_TEXT_ACTION, '')
@@ -73,7 +82,7 @@ class GameController(object):
         text = self.PRE_TEXT_ACTION + text
         return text
 
-    def get_given_steps(self, steps):
+    def get_given_steps(self, steps) -> str:
         if steps in self.scripts:
             return self.scripts.get(steps, None)
-        return None
+        return ''

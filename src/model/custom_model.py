@@ -30,6 +30,12 @@ class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
     eos_token_ids_count = 2
     MIN_LENGTH = 36
 
+    def set_sentence_num(self, num):
+        self.eos_token_ids_count = num
+    
+    def get_min_length(self, length):
+        self.MIN_LENGTH = length
+
     def _generate_no_beam_search(
         self,
         input_ids,
