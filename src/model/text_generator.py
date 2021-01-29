@@ -42,12 +42,10 @@ class TextGenerator(object):
             return ''
         return self._scene
 
-    def text_generator(self, text, repetition_penalty=1, top_k=0, temperature=0.8, eos_token_id=None, sentences_nums=2, **kwargs):
+    def text_generator(self, text, repetition_penalty=1.5, top_k=1, temperature=0.8, eos_token_id=None, sentences_nums=2, **kwargs):
         model.set_sentence_num(sentences_nums)
-        if sentences_nums == 1:
-            model.get_min_length(5)
-        text_generator = TextGenerationPipeline(model, tokenizer)
-        length_gen = len(text) + self.MAX_LENGTH
+        length_gen = len(tokenizer(text, add_special_tokens=False, return_attention_mask=False, return_token_type_ids=False)['input_ids'])
+        length_gen += self.MAX_LENGTH
         return text_generator(
             text,
             max_length=length_gen,
@@ -113,4 +111,4 @@ try:
 except NameError:
     print(f'loading model from pretrained {model_path}')
     model = TFGPT2LMHeadModel.from_pretrained(model_path, use_cache=True)
-
+    text_generator = TextGenerationPipeline(model, tokenizer)
