@@ -44,7 +44,7 @@ class TextGenerator(object):
 
     def text_generator(self, text, repetition_penalty=1.5, top_k=1, temperature=0.8, eos_token_id=None, sentences_nums=2, **kwargs):
         model.set_sentence_num(sentences_nums)
-        length_gen = len(tokenizer(text, add_special_tokens=False, return_attention_mask=False, return_token_type_ids=False)['input_ids'])
+        length_gen = len(tokenizer(text, add_special_tokens=False, return_attention_mask=False, return_token_type_ids=None)['input_ids'])
         length_gen += self.MAX_LENGTH
         return text_generator(
             text,
