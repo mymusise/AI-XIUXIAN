@@ -3,10 +3,11 @@ from rest_framework import viewsets, status
 from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .text_generator import TextGenerator
+from .text_generator import TextGenerator, text_generator, tokenizer
 from .game import GameController, GAME_SCRIPTS
 from apis.settings import logger
 from utils.base import BaseView
+import os
 
 
 class StartInfoView(BaseView, viewsets.GenericViewSet):
@@ -63,3 +64,34 @@ class TextGeneratorView(BaseView, viewsets.GenericViewSet):
 
         self.logger.info(f"[next_text={next_text}]")
         return Response({'next': next_text, 'text': current_text})
+
+
+class SuggestionView(BaseView):
+
+    @property
+    def max_length_limit(self):
+        return int(os.environ.get('MAX_LENGTH_LIMIT', 0))
+
+    @property
+    def num_suggest_limit(self):
+        return int(os.environ.get('NUM_SUGGEST_LIMIT', 0))
+
+    def get(self, request):
+        current = request.GET.get('current', '')
+        len_gen = int(request.GET.get('max_length', 6))
+        num_suggest = int(request.GET.get('num_suggest', 3))
+
+        if not current:
+            return Response([], content_type="application/json")
+
+        if self.max_length_limit and len_gen > self.max_length_limit:
+            len_gen = self.max_length_limit
+
+        if self.num_suggest_limit and num_suggest > self.num_suggest_limit:
+            num_suggest = self.num_suggest_limit
+
+        len_current = len(tokenizer(current, add_special_tokens=False, return_attention_mask=False, return_token_type_ids=None)['input_ids'])
+        result = text_generator(current, max_length=len_current + len_gen, repetition_penalty=1.5, top_k=num_suggest, num_beams=num_suggest, num_return_sequences=num_suggest)
+        result = [item['generated_text'][len(current):] for item in result]
+        self.logger.info(f"[Suggestion result={result}]")
+        return Response(result, content_type="application/json")

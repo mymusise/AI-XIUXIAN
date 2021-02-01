@@ -6,10 +6,13 @@ services:
       context: .
     # env_file:
     #   - .env
-    command: gunicorn -w 2 apis.wsgi -b 0.0.0.0:80
+    command: gunicorn -w 6 apis.wsgi -b 0.0.0.0:80
     volumes:
       - /data2/:/data2/
-    # environment:
+      - ./src/logs/:/app/logs/
+    environment:
+        - MAX_LENGTH_LIMIT=8
+        - NUM_SUGGEST_LIMIT=3
     #   - DEBUG=TRUE
     ports:
       - 7890:80
