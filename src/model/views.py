@@ -81,7 +81,9 @@ class SuggestionView(BaseView):
         len_gen = int(request.GET.get('max_length', 6))
         num_suggest = int(request.GET.get('num_suggest', 3))
 
-        if not current:
+        len_current = len(tokenizer(current, add_special_tokens=False, return_attention_mask=False, return_token_type_ids=None)['input_ids'])
+
+        if not current or len_current == 0:
             return Response([], content_type="application/json")
 
         if self.max_length_limit and len_gen > self.max_length_limit:
@@ -90,7 +92,7 @@ class SuggestionView(BaseView):
         if self.num_suggest_limit and num_suggest > self.num_suggest_limit:
             num_suggest = self.num_suggest_limit
 
-        len_current = len(tokenizer(current, add_special_tokens=False, return_attention_mask=False, return_token_type_ids=None)['input_ids'])
+        
         result = text_generator(current, max_length=len_current + len_gen, repetition_penalty=1.5, top_k=num_suggest, num_beams=num_suggest, num_return_sequences=num_suggest)
         result = [item['generated_text'][len(current):] for item in result]
         self.logger.info(f"[Suggestion result={result}]")
