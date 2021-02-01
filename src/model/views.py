@@ -88,11 +88,17 @@ class SuggestionView(BaseView):
 
         if self.max_length_limit and len_gen > self.max_length_limit:
             len_gen = self.max_length_limit
+        if len_gen > 128:  # n_position = 256 = max_len_current + max_len_gen
+            len_gen = 128
 
         if self.num_suggest_limit and num_suggest > self.num_suggest_limit:
             num_suggest = self.num_suggest_limit
 
-        
+        if len_current > 128:
+            current = current[-128 + 1:]
+            len_current = len(tokenizer(current, add_special_tokens=False, return_attention_mask=False, return_token_type_ids=None)['input_ids'])
+
+        self.logger.info(f"[Suggestion generating len_current={len_current} len_gen={len_gen}]")
         result = text_generator(current, max_length=len_current + len_gen, repetition_penalty=1.5, top_k=num_suggest, num_beams=num_suggest, num_return_sequences=num_suggest)
         result = [item['generated_text'][len(current):] for item in result]
         self.logger.info(f"[Suggestion result={result}]")

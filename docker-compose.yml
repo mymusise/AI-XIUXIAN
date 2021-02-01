@@ -6,7 +6,7 @@ services:
       context: .
     # env_file:
     #   - .env
-    command: gunicorn -w 6 apis.wsgi -b 0.0.0.0:80
+    command: gunicorn -w 6 apis.wsgi -b 0.0.0.0:80 --timeout 300
     volumes:
       - /data2/:/data2/
       - ./src/logs/:/app/logs/
