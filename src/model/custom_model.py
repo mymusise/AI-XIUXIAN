@@ -10,9 +10,11 @@ from transformers.generation_tf_utils import set_tensor_by_indices_to_value
 from transformers.generation_tf_utils import tf_top_k_top_p_filtering
 from transformers.generation_tf_utils import shape_list
 from .tokens import extra_token
+import os
 
-
-model_path = '/data2/novels/finetune/models/'
+model_path =  os.environ.get('MODEL_PATH'):
+if model_path is None:
+    model_path = '/data2/novels/finetune/models/'
 tokenizer = None
 if tokenizer is None:
     tokenizer = XLNetTokenizer.from_pretrained(
@@ -61,7 +63,6 @@ class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
         Generate sequences for each example without beam search (num_beams == 1). All returned sequence are generated
         independantly.
         """
-        print("_generate_no_beam_search ing...")
         # eos_token_ids = dict(self.eos_token_ids)
         eos_token_ids_count = int(self.eos_token_ids_count)
         # length of generated sentences / unfinished sentences
@@ -224,7 +225,6 @@ class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
                                broad_casted_sent_lengths, input_ids, padding)
         else:
             decoded = input_ids
-        print(self.eos_token_ids)
         return decoded
 
 

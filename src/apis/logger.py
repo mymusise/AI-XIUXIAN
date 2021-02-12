@@ -1,3 +1,6 @@
+import logging.config
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -17,6 +20,11 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'filters': ['request_id'],
             'formatter': 'standard',
+        },
+        'terminal_handler': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/terminal.log',
         },
         'apis_handler': {
             'level': 'INFO',
@@ -51,6 +59,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'terminal': {
+            'handlers': ['terminal_handler'],
+            'level': 'INFO',
+            'propagate': False,
+        },
         'aliyun': {
             'handlers': ['aliyun_handler', 'console'],
             'level': 'INFO',
@@ -63,3 +76,9 @@ LOGGING = {
         }
     }
 }
+
+logging.config.dictConfig(LOGGING)
+logger = logging.getLogger('apis')
+terminal_logger = logging.getLogger('terminal')
+aliyun_logger = logging.getLogger('aliyun')
+exception_logger = logging.getLogger('exception')

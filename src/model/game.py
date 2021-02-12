@@ -49,6 +49,10 @@ class GameController(object):
         self.init_script(start_id)
 
     def init_script(self, start_id):
+        if type(start_id) == str and start_id.isnumeric():
+            start_id = int(start_id)
+        elif type(start_id) != int:
+            raise TypeError(f"start_id:{start_id} should be int")
         if start_id == self.CUSTOM_START_ID:
             self.scripts = self.EMPTY_SCRIPT
             return

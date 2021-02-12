@@ -5,6 +5,8 @@ from .game import _TextType
 import re
 from .tokens import TALKING_TOKEN, NONTALKING_TOKEN, HERO_TOKEN
 
+from apis.logger import terminal_logger as logger
+
 
 class ExpandToken:
     DO = _TextType('action', TALKING_TOKEN)
@@ -36,8 +38,8 @@ class TextGenerator(object):
 
     @property
     def scene(self):
-        print("self._scene", self._scene)
-        print("self.pre_text", self.pre_text)
+        logger.info(f"self._scene: {self._scene}")
+        logger.info(f"self.pre_text: {self.pre_text}")
         if self._scene[:-10] in self.pre_text:
             return ''
         return self._scene
@@ -99,7 +101,7 @@ class TextGenerator(object):
 
         all_text = self.encode_player_name(all_text, player.name)
         result = self.text_generator(all_text)
-        print(result)
+        logger.info(f"[gen_next][result={result}]")
         next = self.clean_result(result[len(all_text):])
         next = self.decode_player_name(next, player.name)
         return next
