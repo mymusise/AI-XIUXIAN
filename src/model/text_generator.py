@@ -54,7 +54,7 @@ class TextGenerator(object):
             do_sample=True,
             repetition_penalty=repetition_penalty,
             top_k=top_k,
-            # no_repeat_ngram_size=2,
+            no_repeat_ngram_size=5,
             skip_special_tokens=False,
             eos_token_id=eos_token_id,
             temperature=temperature,

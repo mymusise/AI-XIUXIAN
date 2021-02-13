@@ -21,7 +21,7 @@ if tokenizer is None:
         model_path, additional_special_tokens=extra_token)
 
 
-eos_tokens = ["....", ".", "。", "!", "?", "！", "？", "”", "；", "\""]
+eos_tokens = ["....", ".", "。", "!", "?", "！", "？", "”", "；", "\"", "~"]
 
 
 class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
