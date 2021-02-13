@@ -12,7 +12,7 @@ from transformers.generation_tf_utils import shape_list
 from .tokens import extra_token
 import os
 
-model_path =  os.environ.get('MODEL_PATH'):
+model_path = os.environ.get('MODEL_PATH')
 if model_path is None:
     model_path = '/data2/novels/finetune/models/'
 tokenizer = None
@@ -23,18 +23,20 @@ if tokenizer is None:
 
 eos_tokens = ["....", ".", "。", "!", "?", "！", "？", "”", "；", "\""]
 
+
 class TFGPT2LMHeadModel(TFGPT2LMHeadModel):
     # eos_token_ids = {
     #     tokenizer.get_vocab().get("。", 0): 2,
     #     tokenizer.get_vocab().get("”", 0): 1,
     # }
-    eos_token_ids = [v for k, v in tokenizer.get_vocab().items() for t in eos_tokens if t in k ]
+    eos_token_ids = [v for k, v in tokenizer.get_vocab().items()
+                     for t in eos_tokens if t in k]
     eos_token_ids_count = 2
     MIN_LENGTH = 36
 
     def set_sentence_num(self, num):
         self.eos_token_ids_count = num
-    
+
     def get_min_length(self, length):
         self.MIN_LENGTH = length
 

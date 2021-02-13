@@ -13,6 +13,7 @@ services:
     environment:
         - MAX_LENGTH_LIMIT=8
         - NUM_SUGGEST_LIMIT=3
+        - MODEL_PATH=/data2/novels/finetune/models/
     #   - DEBUG=TRUE
     ports:
       - 7890:80
