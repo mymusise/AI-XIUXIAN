@@ -14,7 +14,7 @@ import os
 
 model_path = os.environ.get('MODEL_PATH')
 if model_path is None:
-    model_path = '/data2/novels/finetune/models/'
+    model_path = 'mymusise/AIXX'
 tokenizer = None
 if tokenizer is None:
     tokenizer = XLNetTokenizer.from_pretrained(
