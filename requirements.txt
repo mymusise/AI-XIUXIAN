@@ -3,9 +3,6 @@ django-cors-headers==3.5.0
 djangorestframework==3.11.2
 django-log-request-id
 
-numpy
-pandas
-xlrd
 tensorflow-cpu
 transformers==4.0
 gunicorn==19.9.0
