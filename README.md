@@ -1,8 +1,5 @@
 # AIXX
 
-<p align="center">
-<img alt="Build" src="https://github.com/mymusise/AI-XIUXIAN/blob/main/logo.png">
-</p>
 
 AIXX是一款免费的开源单人文字冒险游戏，游戏基于AI模型，根据玩家的输入，生成各种各样的游戏内容。
 
