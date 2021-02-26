@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework import serializers
 from rest_framework.decorators import action
