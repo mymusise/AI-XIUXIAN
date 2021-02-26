@@ -1,10 +1,14 @@
 # AIXX
 
+<p align="center">
+<img alt="Build" src="https://github.com/mymusise/AI-XIUXIAN/blob/main/logo.png">
+</p>
+
 AIXX是一款免费的开源单人文字冒险游戏，游戏基于AI模型，根据玩家的输入，生成各种各样的游戏内容。
 
 - 在线体验： https://aixx.mymusise.com
 
-- 或者可以在colab上运行：　<a href="https://colab.research.google.com/github/mymusise/CPM-TF2Transformer/blob/main/demo-fp16.ipynb"><img alt="Build" src="https://colab.research.google.com/assets/colab-badge.svg">
+- 或者可以在colab上运行：　<a href="https://colab.research.google.com/github/mymusise/AI-XIUXIAN/blob/main/demo.ipynb"><img alt="Build" src="https://colab.research.google.com/assets/colab-badge.svg">
 </a>
 
 - 或者你还可以在本地直接运行：
